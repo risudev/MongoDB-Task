@@ -1,8 +1,8 @@
-🍃 MongoDB Task
-🧾 Zen Class Programme
+### 🍃 MongoDB Task
+### 🧾 Zen Class Programme
 This project outlines a MongoDB-based data model and queries for managing Zen Class student records and activities.
 
-📖 Collections
+### 📖 Collections
 users: Stores user information such as name, email, and mentor ID.
 codekata: Tracks the number of coding problems solved by each user.
 attendance: Logs student attendance by date.
