@@ -1,4 +1,4 @@
-### 🍃 MongoDB Task
+###  MongoDB Task
 ### 🧾 Zen Class Programme
 This project outlines a MongoDB-based data model and queries for managing Zen Class student records and activities.
 
