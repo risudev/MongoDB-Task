@@ -1,0 +1,233 @@
+1. Create and use the database
+    use zen_class_program;
+
+2. Create collections *users *codekata *attendance *topics *tasks *company_drives *mentors
+
+// users
+
+db.users.insertMany([
+  { _id: 1, name: "Alice", email: "alice@mail.com", mentor_id: 101 },
+  { _id: 2, name: "Bob", email: "bob@mail.com", mentor_id: 101 },
+  { _id: 3, name: "Charlie", email: "charlie@mail.com", mentor_id: 102 }
+]);
+
+// codekata
+
+db.codekata.insertMany([
+  { user_id: 1, problems_solved: 120 },
+  { user_id: 2, problems_solved: 80 },
+  { user_id: 3, problems_solved: 150 }
+]);
+
+
+// attendance
+
+db.attendance.insertMany([
+  { user_id: 1, date: new Date("2020-10-16"), present: true },
+  { user_id: 2, date: new Date("2020-10-17"), present: false },
+  { user_id: 3, date: new Date("2020-10-18"), present: false }
+]);
+
+
+// topics
+
+db.topics.insertMany([
+  { topic: "MongoDB Basics", date: new Date("2020-10-10") },
+  { topic: "Aggregation", date: new Date("2020-10-25") }
+]);
+
+// tasks
+
+db.tasks.insertMany([
+  { task_name: "React", due_date: new Date("2020-10-20"), submitted: true, user_id: 1 },
+  { task_name: "Tailwind CSS", due_date: new Date("2020-10-21"), submitted: false, user_id: 2 },
+  { task_name: "MY SQL", due_date: new Date("2020-10-22"), submitted: false, user_id: 3 }
+]);
+
+
+// company drives
+
+db.company_drives.insertMany([
+  { company: "Google", date: new Date("2020-10-19"), students_appeared: [1, 2] },
+  { company: "Amazon", date: new Date("2020-10-25"), students_appeared: [2, 3] }
+]);
+
+
+// mentors
+
+db.mentors.insertMany([
+  { _id: 101, name: "riswan", mentee_count: 10 },
+  { _id: 102, name: "sufiyan", mentee_count: 20 }
+]);
+
+
+Queries
+1. Find all the topics and tasks which are thought in the month of October
+
+db.topics.find({date: {$gte: new Date("2020-10-01"), $lte: new Date("2020-10-31")}});
+db.tasks.find({ due_date: { $gte: new Date("2020-10-01"), $lte: new Date("2020-10-31") } });
+
+{
+  _id: ObjectId('689b7d7f03409b7e64cc29ec'),
+  task_name: 'React',
+  due_date: 2020-10-20T00:00:00.000Z,
+  submitted: true,
+  user_id: 1
+}
+
+{
+  _id: ObjectId('689b7d7f03409b7e64cc29ed'),
+  task_name: 'Tailwind CSS',
+  due_date: 2020-10-21T00:00:00.000Z,
+  submitted: false,
+  user_id: 2
+}
+
+{
+  _id: ObjectId('689b7d7f03409b7e64cc29ee'),
+  task_name: 'MY SQL',
+  due_date: 2020-10-22T00:00:00.000Z,
+  submitted: false,
+  user_id: 3
+}
+
+2. Find all the company drives which appeared between 15 oct-2020 and 31-oct-2020.
+
+db.company_drives.find({ date: { $gte: new Date("2020-10-15"), $lte: new Date("2020-10-31") } });
+
+{
+  _id: ObjectId('68307068291ff269e43901a6'),
+  company: 'Google',
+  date: 2020-10-19T00:00:00.000Z
+}
+
+{
+  _id: ObjectId('68307068291ff269e43901a7'),
+  company: 'Amazon',
+  date: 2020-10-25T00:00:00.000Z
+}
+
+
+{
+  _id: ObjectId('68307566291ff269e43901a8'),
+  company: 'Facebook',
+  date: 2020-10-20T00:00:00.000Z
+}
+
+3. Find all the company drives and students who are appeared for the placement.
+
+db.company_drives.find({}, { company: 1, students_appeared: 1 , _id:0 });
+
+{
+  company: 'Google',
+  students_appeared: [
+    3
+  ]
+}
+
+{
+  company: 'Amazon',
+  students_appeared: [
+    [
+      1,
+      2
+    ]
+  ]
+}
+
+{
+  company: 'Facebook',
+  students_appeared: [
+    [
+      2,
+      3
+    ]
+  ]
+}
+
+{
+  company: 'Microsoft',
+  students_appeared: [
+    1
+  ]
+}
+
+4. Find the number of problems solved by the user in codekata.
+
+db.codekata.find({}, {user_id:1, problems_solved:1});
+{
+  _id: ObjectId('689b7d3103409b7e64cc29e4'),
+  user_id: 1,
+  problems_solved: 120
+}
+
+{
+  _id: ObjectId('689b7d3103409b7e64cc29e5'),
+  user_id: 2,
+  problems_solved: 80
+}
+
+{
+  _id: ObjectId('689b7d3103409b7e64cc29e6'),
+  user_id: 3,
+  problems_solved: 150
+}
+
+5. Find all the mentors with who has the mentee's count more than 15.
+
+db.mentors.find({ mentee_count: { $gt: 15 } });
+{
+  _id: 102,
+  name: 'sufiyan',
+  mentee_count: 20
+}
+
+6. Find the number of users who are absent and task is not submitted between 15 oct-2020 and 31-oct-2020.
+
+db.attendance.aggregate([
+  {
+    $match: {
+      present: false,
+      date: { $gte: new Date("2020-10-15"), $lte: new Date("2020-10-31") }
+    }
+  },
+  {
+    $lookup: {
+      from: "tasks",
+      let: { userId: "$user_id" },
+      pipeline: [
+        {
+          $match: {
+            $expr: {
+              $and: [
+                { $eq: ["$user_id", "$$userId"] },
+                { $eq: ["$submitted", false] },
+                { $gte: ["$due_date", new Date("2020-10-15")] },
+                { $lte: ["$due_date", new Date("2020-10-31")] }
+              ]
+            }
+          }
+        }
+      ],
+      as: "unsubmitted_tasks"
+    }
+  },
+  {
+    $match: {
+      "unsubmitted_tasks.0": { $exists: true }
+    }
+  },
+  {
+    $group: {
+      _id: "$user_id"
+    }
+  },
+  {
+    $count: "absent_and_not_submitted_count"
+  }
+]);
+
+
+{
+  absent_and_not_submitted_count: 2
+}
